@@ -1,0 +1,81 @@
+<!--
+Transitioning between game animation states via CSS classes.
+Is this reasonable?
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>HTML5 boilerplate—all you really need…</title>
+  <!--[if IE]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style>
+    .blob {
+      -webkit-transition: -webkit-transform 5s ease-in-out;
+      margin: 20px;
+      width: 100px;
+      height: 100px;
+    }
+    .inner {
+      border-radius: 50px;
+      width: 100%;
+      height: 100%;
+      background: -webkit-gradient(radial, 50 50, 50, 50 45, 20, from(#4B6192), to(#5B61B2), color-stop(.2,#9DECFF),color-stop(0,#4175AF));
+      -webkit-transition: -webkit-transform 2s ease-in-out;
+    }
+    .extendedX {
+      -webkit-transform: scale(1,1.2);
+    }
+    .extendedY {
+      -webkit-transform: scale(1.2,1);
+    }
+    .right {
+      -webkit-transform: translate(500px, 0);
+    }
+    .rotated {
+      -webkit-transform: rotate(360deg);
+      -webkit-transform-origin: 50px 50px;
+    }
+    .consumed {
+      -webkit-transform: scale(0,0);
+    }
+  </style>
+  <script>
+    setInterval(function() {
+      document.querySelector('.blob .inner').classList.toggle('extendedX');
+    }, 1700);
+
+    setInterval(function() {
+      document.querySelector('.blob .inner').classList.toggle('extendedY');
+    }, 1300);
+
+    function toggleRight() {
+      document.querySelector('.blob').classList.toggle('right');
+    }
+
+    function rotate() {
+      document.querySelector('.blob').classList.toggle('rotated');
+    }
+
+    function consume() {
+      document.querySelector('.blob').classList.toggle('consumed');
+    }
+  </script>
+</head>
+
+<body>
+
+<div class="blob">
+  <div class="inner">
+  </div>
+</div>
+
+<div>
+<button onclick="toggleRight()">right</button>
+<button onclick="rotate()">rotate</button>
+<button onclick="consume()">consume</button>
+</div>
+
+</body>
+</html>
