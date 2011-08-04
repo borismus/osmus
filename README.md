@@ -1,7 +1,5 @@
 Multiplayer HTML5 Osmos
 
-# TODO
-
 # Running
 
 * Install Node
@@ -13,6 +11,8 @@ Multiplayer HTML5 Osmos
 Or actually don't profit since Chrome Dev Channel breaks WebSockets right now.  So
 get an older version - for example, this worked for me:
 http://build.chromium.org/f/chromium/snapshots/Mac/87978/
+
+# TODO
 
 ## First release
 
