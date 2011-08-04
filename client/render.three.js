@@ -45,7 +45,8 @@ var ThreeRenderer = function(game) {
   pointLight.position.y = Game.HEIGHT / 2.0;
   pointLight.position.z = 400;
   this.scene.addLight(pointLight);
-
+  var ambientLight = new THREE.AmbientLight(0x999999);
+  this.scene.addLight(ambientLight);
 
   this.setSphereProps_(
       this.addSphere_(0xFF0000),
@@ -65,7 +66,8 @@ var ThreeRenderer = function(game) {
 ThreeRenderer.prototype.addSphere_ = function(color) {
   var radius = 1, segments = 16, rings = 16;
   var sphereMaterial = new THREE.MeshLambertMaterial({
-      color: color
+      color: color,
+      reflectivity: 0.5
   });
   var sphere = new THREE.Mesh(
       new THREE.SphereGeometry(radius, segments, rings),
