@@ -32,7 +32,9 @@ CanvasRenderer.prototype.render = function() {
       // TODO: render animation
       console.log('dead!', o.id);
     }
-    this.renderObject_(o);
+    if (o.r > 0) {
+      this.renderObject_(o);
+    }
   }
 
   var ctx = this;

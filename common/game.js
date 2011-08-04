@@ -31,6 +31,11 @@ Game.prototype.computeState = function(delta) {
       newState[obj.id] = obj.computeState(delta);
     }
   }
+
+  // Largest and second largest objects.
+  var largest = 0;
+  var second = 0;
+
   // Go through the new state and check for collisions etc, make
   // adjustments accordingly.
   for (var i in newState) {
@@ -50,6 +55,17 @@ Game.prototype.computeState = function(delta) {
       // Do some math, bounce and reposition.
       this.repositionInBounds_(o);
     }
+
+    // Get the largest and second largest blobs in the world.
+    if (o.r > largest.r) {
+      second = largest;
+      largest = o;
+    }
+  }
+  // Victory: largest is significantly larger than second largest.
+  if (largest > second * 1.5) {
+    console.log('game over!');
+    this.callback_('victory', {winner: largest.id});
   }
   return newState;
 };
@@ -124,6 +140,16 @@ Game.prototype.shoot = function(id, direction) {
   player.r -= newR;
 };
 
+Game.prototype.getPlayerCount = function() {
+  var count = 0;
+  for (var id in this.state) {
+    if (this.state[id].type == 'player') {
+      count++;
+    }
+  }
+  return count;
+};
+
 /***********************************************
  * Loading and saving
  */
@@ -168,7 +194,7 @@ Game.prototype.load = function(savedState) {
  */
 
 /**
- * Transfers mass between the two objects.
+ * Transfers mass between two objects.
  */
 Game.prototype.transferMass_ = function(o, p, delta) {
   console.log('deadness', o.id, o.dead, p.id, p.dead);
@@ -194,7 +220,7 @@ Game.prototype.transferMass_ = function(o, p, delta) {
   if (small.r <= 1) {
     small.dead = true;
     console.log('killed', small.id);
-    this.callback_('dead', {id: small.id});
+    this.callback_('dead', {id: small.id, type: small.type});
   }
 };
 
@@ -334,7 +360,6 @@ var Player = function(params) {
 
 Player.prototype = new Blob();
 Player.prototype.constructor = Player;
-
 
 exports.Game = Game;
 exports.Player = Player;
