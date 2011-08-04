@@ -5,12 +5,13 @@ Multiplayer HTML5 Osmos
 ## First release
 
 * Mouse input handling (DONE)
-* Victory conditions
 * Basic UI and instructions
-  * Who is playing now?
-  * How many people are watching?
+  * Who is playing now? (DONE)
+  * How many people are watching? (DONE)
 * Switch to require.js in browser and separate game.js into components
-* Fixed up game mechanics
+* Fix up game mechanics
+* Victory conditions (one blob is bigger than the next biggest by a
+  percentage)
 * Better sync (act on server timestamp)
 
 ## Future
