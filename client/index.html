@@ -6,6 +6,7 @@
     <script src="lib/socket.io.js"></script>
     <script src="client.js"></script>
     <script src="render.js"></script>
+    <script src="input.js"></script>
     <script src="../common/game.js"></script>
 
     <style>
@@ -14,21 +15,9 @@
   </head>
   <body>
 
-    <canvas id="canvas" width="640" height="480"/>
+    <canvas id="canvas" width="640" height="480"></canvas>
 
-    <button onclick="join()">join</button>
-    <button onclick="shoot()">shoot</button>
+    <button id="join">join</button>
 
-    <script>
-      function join() {
-        socket.emit('join');
-      }
-
-      function shoot() {
-        socket.emit('shoot', {
-          direction: Math.floor(Math.random() * 360)
-        });
-      }
-    </script>
   </body>
 </html>

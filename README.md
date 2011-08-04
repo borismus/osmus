@@ -1,5 +1,27 @@
 Multiplayer HTML5 Osmos
 
+# TODO
+
+## First release
+
+* Mouse input handling (DONE)
+* Victory conditions
+* Basic UI and instructions
+  * Who is playing now?
+  * How many people are watching?
+* Switch to require.js in browser and separate game.js into components
+* Fixed up game mechanics
+* Better sync (act on server timestamp)
+
+## Future
+
+* UI Polish
+* Make the game look nice!
+* iPad support
+* iPhone support?
+* Resizing viewports?
+* Multiple rooms?
+
 # Networking
 
 When a client connects, send them the current state of the game.

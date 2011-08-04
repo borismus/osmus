@@ -1,3 +1,4 @@
+(function(exports) {
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){
   return  window.requestAnimationFrame       ||
@@ -10,6 +11,9 @@ window.requestAnimFrame = (function(){
           };
 })();
 
+/**
+ * Canvas-based renderer
+ */
 var CanvasRenderer = function(game) {
   this.game = game;
   this.canvas = document.getElementById('canvas');
@@ -24,6 +28,10 @@ CanvasRenderer.prototype.render = function() {
   // Render the game state
   for (var i in this.game.state) {
     var o = this.game.state[i];
+    if (o.dead) {
+      // TODO: render animation
+      console.log('dead!', o.id);
+    }
     this.renderObject_(o);
   }
 
@@ -34,6 +42,20 @@ CanvasRenderer.prototype.render = function() {
 };
 
 CanvasRenderer.prototype.renderObject_ = function(obj) {
-  this.context.fillStyle = (obj.name ? 'green' : 'red');
-  this.context.fillRect(obj.x, obj.y, obj.r, obj.r);
+  var ctx = this.context;
+  ctx.fillStyle = (obj.type == "player" ? 'green' : 'red');
+  ctx.beginPath();
+  ctx.arc(obj.x, obj.y, obj.r, 0, 2 * Math.PI, true);
+  ctx.closePath();
+  ctx.fill();
+  if (obj.type == 'player') {
+    ctx.font = "10pt Arial";
+    ctx.fillStyle = 'black';
+    ctx.fillText(obj.id, obj.x, obj.y);
+  }
+
 };
+
+exports.Renderer = CanvasRenderer;
+
+})(window);

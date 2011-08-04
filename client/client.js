@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-var socket = io.connect('http://localhost:5050');
+// TODO: These should be hidden with var
+socket = io.connect('http://localhost:5050');
 game = new Game();
-var renderer = new CanvasRenderer(game);
+var renderer = new Renderer(game);
+var input = new Input(game);
 
 // Get the initial game state
 socket.on('state', function(data) {
@@ -12,9 +14,22 @@ socket.on('state', function(data) {
   renderer.render();
 });
 
-// Get an update from the server
-socket.on('update', function(data) {
-  console.log('recv update', data);
+// A new client joins.
+socket.on('join', function(data) {
+  console.log('recv join', data);
+  game.join(data.name);
+});
+
+// A client leaves.
+socket.on('leave', function(data) {
+  console.log('recv leave', data);
+  game.leave(data.name);
+});
+
+// A client shoots.
+socket.on('shoot', function(data) {
+  console.log('recv shoot', data);
+  game.shoot(data.playerId, data.direction);
 });
 
 // Get a time sync from the server
@@ -22,4 +37,11 @@ socket.on('time', function(data) {
   console.log('recv time', data);
 });
 
+});
+
+game.on('dead', function(data) {
+  // Someone died :(
+  // If it's the player on this client, end game!
+  if (data.id == clientId) {
+  }
 });
