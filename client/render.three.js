@@ -11,54 +11,118 @@ window.requestAnimFrame = (function(){
           };
 })();
 
-/**
- * Canvas-based renderer
- */
-var CanvasRenderer = function(game) {
+var ThreeRenderer = function(game) {
   this.game = game;
-  this.canvas = document.getElementById('canvas');
-  this.context = this.canvas.getContext('2d');
+  this.geometry = {};
+
+  console.log(game);
+  var VIEW_ANGLE = 45,
+      ASPECT = Game.WIDTH / Game.HEIGHT,
+      NEAR = -1000,
+      FAR = 1000;
+
+  var container = document.getElementById('container');
+  this.renderer = new THREE.WebGLRenderer();
+  this.camera = new THREE.Camera(VIEW_ANGLE,
+                                 ASPECT,
+                                 NEAR,
+                                 FAR);
+  this.scene = new THREE.Scene();
+
+  this.camera.projectionMatrix = THREE.Matrix4.makeOrtho(
+      0, Game.WIDTH, Game.HEIGHT, 0, NEAR, FAR);
+  this.camera.position.x = 0;
+  this.camera.position.y = 0;
+  this.camera.position.z = 400;
+
+  this.renderer.setClearColor(new THREE.Color(0xFFFFFF, 1));
+  this.renderer.setSize(Game.WIDTH, Game.HEIGHT);
+  this.renderer.domElement.id = 'canvas';
+  container.appendChild(this.renderer.domElement);
+
+  var pointLight = new THREE.PointLight(0xFFFFFF);
+  pointLight.position.x = Game.WIDTH / 2.0;
+  pointLight.position.y = Game.HEIGHT / 2.0;
+  pointLight.position.z = 400;
+  this.scene.addLight(pointLight);
+
+
+  this.setSphereProps_(
+      this.addSphere_(0xFF0000),
+      0, 0, 10);
+  this.setSphereProps_(
+      this.addSphere_(0xFFF000),
+      Game.WIDTH, 0, 10);
+  this.setSphereProps_(
+      this.addSphere_(0x00FF00),
+      0, Game.HEIGHT, 10);
+  this.setSphereProps_(
+      this.addSphere_(0x0000FF),
+      Game.WIDTH, Game.HEIGHT, 10);
+
 };
 
-CanvasRenderer.prototype.render = function() {
+ThreeRenderer.prototype.addSphere_ = function(color) {
+  var radius = 1, segments = 16, rings = 16;
+  var sphereMaterial = new THREE.MeshLambertMaterial({
+      color: color
+  });
+  var sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, segments, rings),
+      sphereMaterial);
+  this.scene.addChild(sphere);
+  return sphere;
+};
+
+ThreeRenderer.prototype.setSphereProps_ = function(geo, x, y, r) {
+  geo.scale.x = r;
+  geo.scale.y = r;
+  geo.scale.z = r;
+  geo.position.x = x;
+  geo.position.y = y;
+  geo.position.z = 0;
+};
+
+ThreeRenderer.prototype.render = function() {
   var timeStamp = new Date();
   this.game.update(timeStamp);
-
-  this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  // Render the game state
   for (var i in this.game.state) {
     var o = this.game.state[i];
     if (o.dead) {
       // TODO: render animation
+      delete this.geometry[o.id];
       console.log('dead!', o.id);
     }
-    this.renderObject_(o);
+    this.updateObject_(o);
   }
-
+  this.renderer.render(this.scene, this.camera);
   var ctx = this;
   requestAnimFrame(function() {
     ctx.render.call(ctx);
   });
 };
 
-CanvasRenderer.prototype.renderObject_ = function(obj) {
-  var ctx = this.context;
-  ctx.fillStyle = (obj.type == "player" ? 'green' : 'red');
-  ctx.beginPath();
-  if (obj.r > 0) {
-    ctx.arc(obj.x, obj.y, obj.r, 0, 2 * Math.PI, true);
+ThreeRenderer.prototype.updateObject_ = function(obj) {
+  if (!this.geometry[obj.id]) {
+    var color = (obj.type == 'player' ? 0x00cc00 : 0xcc0000);
+    console.log("Adding sphere", obj, color);
+    this.geometry[obj.id] = this.addSphere_(color);
   }
-  ctx.closePath();
-  ctx.fill();
+  var mesh = this.geometry[obj.id];
+  if (obj.r > 0) {
+    this.setSphereProps_(mesh, obj.x, obj.y, obj.r);
+    //console.log(obj.id, obj.x, obj.y, obj.r);
+  }
+  /*
   if (obj.type == 'player') {
     ctx.font = "10pt Arial";
     ctx.fillStyle = 'black';
     ctx.fillText(obj.id, obj.x, obj.y);
   }
-
+  */
 };
 
-exports.Renderer = CanvasRenderer;
+exports.Renderer = ThreeRenderer;
 
 })(window);
 
