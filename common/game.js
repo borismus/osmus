@@ -56,7 +56,16 @@ Game.prototype.computeState = function(delta) {
       this.repositionInBounds_(o);
     }
 
-    // Check for victory conditions.
+    // Get the largest and second largest blobs in the world.
+    if (o.r > largest.r) {
+      second = largest;
+      largest = o;
+    }
+  }
+  // Victory: largest is significantly larger than second largest.
+  if (largest > second * 1.5) {
+    console.log('game over!');
+    this.callback_('victory', {winner: largest.id});
   }
   return newState;
 };

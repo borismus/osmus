@@ -21,10 +21,11 @@ http://build.chromium.org/f/chromium/snapshots/Mac/87978/
   * Who is playing now? (DONE)
   * How many people are watching? (DONE)
 * Switch to require.js in browser and separate game.js into components
-* Fix up game mechanics
 * Victory conditions (one blob is bigger than the next biggest by a
   percentage)
 * Better sync (act on server timestamp)
+* Generate randomized levels.
+* Fix up game mechanics
 
 ## Future
 

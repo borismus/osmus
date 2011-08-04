@@ -103,7 +103,3 @@ io.sockets.on('connection', function(socket) {
     io.sockets.emit('leave', {name: data.id});
   });
 });
-
-
-function generateState() {
-}
