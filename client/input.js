@@ -21,8 +21,12 @@ function DesktopInput(game) {
 }
 
 DesktopInput.prototype.onjoin = function() {
-  this.name = prompt("your name");
-  socket.emit('join', {name: this.name});
+  var name = prompt("your name");
+  socket.emit('join', {name: name});
+};
+
+DesktopInput.prototype.onleave = function() {
+  socket.emit('leave', {name: playerId});
 };
 
 DesktopInput.prototype.onclick = function(event) {
@@ -30,7 +34,7 @@ DesktopInput.prototype.onclick = function(event) {
   var cx = event.clientX;
   var cy = event.clientY;
   // Get the current player.
-  var player = this.game.state[this.name];
+  var player = this.game.state[playerId];
   // Consider where the player is positioned.
   var px = player.x;
   var py = player.y;
