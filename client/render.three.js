@@ -90,6 +90,7 @@ ThreeRenderer.prototype.render = function() {
     var o = this.game.state[i];
     if (o.dead) {
       // TODO: render animation
+      this.scene.removeChild(this.geometry[o.id]);
       delete this.geometry[o.id];
       console.log('dead!', o.id);
     }
