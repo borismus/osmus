@@ -1,5 +1,17 @@
 Multiplayer HTML5 Osmos
 
+# Running
+
+* Install Node
+* Run `npm install socket.io`
+* Run `node server/server.js`
+* Open client/index.html - for example on Mac `open client/index.html`
+* Profit
+
+Or actually don't profit since Chrome Dev Channel breaks WebSockets right now.  So
+get an older version - for example, this worked for me:
+http://build.chromium.org/f/chromium/snapshots/Mac/87978/
+
 # TODO
 
 ## First release
