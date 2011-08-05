@@ -1,0 +1,116 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: Abel, sans-serif;
+  color: #fff;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OTQ4RTY1OUVCNkZGMTFFMDk3NkFENTY5RDI0MjRCNzYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OTQ4RTY1OUZCNkZGMTFFMDk3NkFENTY5RDI0MjRCNzYiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo5NDhFNjU5Q0I2RkYxMUUwOTc2QUQ1NjlEMjQyNEI3NiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo5NDhFNjU5REI2RkYxMUUwOTc2QUQ1NjlEMjQyNEI3NiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqV2pgoAAABISURBVHjaJIwxCsBACATNERvBxtpX+P83CSLY2GST2KzLOF4RISJmRkTdfRDMTN/s7nH3n2QmlperalXNDKwbHQQvYOHqEWAAMFwYqBMAteQAAAAASUVORK5CYII=);
+}
+
+#logo {
+  margin: 24px auto 12px auto;
+  color: transparent;
+  background: transparent url(../images/logo.png) no-repeat scroll center center;
+  width: 504px;
+  height: 99px;
+}
+
+outer > #canvas,
+#container {
+  margin: 0 0 24px 0;
+  background-color: #000;
+  border-radius: 15px;
+  border: 10px solid #116d97;
+
+          box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+     -moz-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+}
+
+#outer {
+  width: 640px;
+  margin: 0 auto;
+}
+
+#hud {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: justify;
+}
+
+button {
+  vertical-align: middle;
+  border: 0;
+  text-transform: uppercase;
+  text-align: center;
+  font-size: 28px;
+  padding: 15px 15px;
+  width: 4em;
+  
+          box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+     -moz-box-sizing: content-box;
+
+          border-radius: 5px;
+  -webkit-border-radius: 5px;
+     -moz-border-radius: 5px;  
+}
+
+button {
+  background-color: #fff;
+  background-image: -webkit-gradient(linear, 0 0, 0% 100%,
+                                     from(transparent),
+                                     to(transparent),
+                                     color-stop(92%, rgba(130, 215, 255, 1.0)),
+                                     color-stop(51%, rgba(130, 215, 255, 0.4)),
+                                     color-stop(50%, transparent));
+  color: #116d97;
+  
+          text-shadow: 0 1px 0 #fff;
+  -webkit-text-shadow: 0 1px 0 #fff;
+     -moz-text-shadow: 0 1px 0 #fff;
+
+          box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+     -moz-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+}
+
+button:hover {
+  background-color: #d7f2ff;
+          box-shadow: 0 5px 10px rgba(0,0,0,0.5), 0 0 15px #116d97;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.5), 0 0 15px #116d97;
+     -moz-box-shadow: 0 5px 10px rgba(0,0,0,0.5), 0 0 15px #116d97;
+}
+
+button:active,
+button:focus {
+  outline: 0;
+  color: #fff;
+  background-color: #116d97;
+  background-image: -webkit-gradient(linear, 0 0, 0% 100%,
+                                     from(transparent),
+                                     to(rgba(130, 215, 255, 0.4)));
+
+}
+
+#info {
+  font-size: 24px;
+  text-shadow: 0 2px 5px #000;
+  color: white;
+}
+
+/* CSS idioms/hacks/workarounds */
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}

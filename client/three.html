@@ -11,14 +11,28 @@
     <script src="input.js"></script>
     <script src="../common/game.js"></script>
 
-    <style>
-      canvas {border: 1px black solid;}
-    </style>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Orbitron:900|Abel">
+    <link rel="stylesheet" href="css/app.css">
   </head>
   <body>
-    <div id="container"></div>
-    <button id="join">join</button>
-    <div id="observer-count"></div>
-    <div id="player-count"></div>
+
+    <div id="outer">
+      <div id="logo">mosmos</div>
+      <div id="container" width="640" height="480"></div>
+
+      <div id="hud" class="clearfix">
+        <button id="join">Join</button>
+
+        <div id="info">
+          <div>
+            <span id="player-count">0</span> players.
+          </div>
+          <div>
+            <span id="observer-count">0</span> observers.
+          </div>
+        </div>
+      </div>
+    </div>
+
   </body>
 </html>
