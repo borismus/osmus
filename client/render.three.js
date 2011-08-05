@@ -18,8 +18,8 @@ var ThreeRenderer = function(game) {
   console.log(game);
   var VIEW_ANGLE = 45,
       ASPECT = Game.WIDTH / Game.HEIGHT,
-      NEAR = -100,
-      FAR = 1000;
+      NEAR = -500,
+      FAR = 500;
 
   var container = document.getElementById('container');
   this.renderer = new THREE.WebGLRenderer();
@@ -43,10 +43,12 @@ var ThreeRenderer = function(game) {
   var pointLight = new THREE.PointLight(0xFFFFFF);
   pointLight.position.x = Game.WIDTH / 2.0;
   pointLight.position.y = Game.HEIGHT / 2.0;
-  pointLight.position.z = -500;
+  pointLight.position.z = -400;
   this.scene.addLight(pointLight);
-  var ambientLight = new THREE.AmbientLight(0x999999);
+  var ambientLight = new THREE.AmbientLight(0xCCCCCC);
   this.scene.addLight(ambientLight);
+
+  //this.addFloor_();
 
   this.setSphereProps_(
       this.addSphere_(0xFF0000),
@@ -63,11 +65,22 @@ var ThreeRenderer = function(game) {
 
 };
 
+ThreeRenderer.prototype.addFloor_ = function() {
+  var geometry = new THREE.CubeGeometry(Game.WIDTH, Game.HEIGHT, 1, 50, 50);
+  var material = new THREE.MeshLambertMaterial({
+      color: 0xFFFFFF
+  });
+  var cube = new THREE.Mesh(geometry, material);
+  cube.position.x = Game.WIDTH / 2.0;
+  cube.position.y = Game.HEIGHT / 2.0;
+  cube.position.z = -200;
+  this.scene.addObject(cube);
+};
+
 ThreeRenderer.prototype.addSphere_ = function(color) {
-  var radius = 1, segments = 16, rings = 16;
+  var radius = 1, segments = 16, rings = 32;
   var sphereMaterial = new THREE.MeshLambertMaterial({
-      color: color,
-      reflectivity: 0.5
+      color: color
   });
   var sphere = new THREE.Mesh(
       new THREE.SphereGeometry(radius, segments, rings),
@@ -75,6 +88,8 @@ ThreeRenderer.prototype.addSphere_ = function(color) {
   this.scene.addChild(sphere);
   return sphere;
 };
+
+
 
 ThreeRenderer.prototype.setSphereProps_ = function(geo, x, y, r) {
   geo.scale.x = r;
