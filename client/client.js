@@ -55,4 +55,10 @@ game.on('dead', function(data) {
   }
 });
 
+// Note: do not use this as the definitive game win condition because we may be
+// out of sync with the truth on the server!
+game.on('victory', function(data) {
+  // Somebody won!
+});
+
 });

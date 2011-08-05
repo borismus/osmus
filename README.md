@@ -17,15 +17,14 @@ http://build.chromium.org/f/chromium/snapshots/Mac/87978/
 ## First release
 
 * Mouse input handling (DONE)
-* Basic UI and instructions
-  * Who is playing now? (DONE)
-  * How many people are watching? (DONE)
+* Who is playing now? (DONE)
+* How many people are watching? (DONE)
+* Generate randomized levels. (DONE)
 * Switch to require.js in browser and separate game.js into components
 * Victory conditions (one blob is bigger than the next biggest by a
   percentage)
 * Better sync (act on server timestamp)
-* Generate randomized levels.
-* Fix up game mechanics
+* Fix up game mechanics (lose mass rather than radius)
 
 ## Future
 

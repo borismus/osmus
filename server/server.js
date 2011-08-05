@@ -1,38 +1,17 @@
-var STATE = {
-  1: {
-    type: 'blob',
-    id: 1,
-    x: 100,
-    y: 400,
-    r: 10,
-    vx: 0.1,
-    vy: -0.1
-  },
-  2: {
-    type: 'blob',
-    id: 2,
-    x: 200,
-    y: 100,
-    r: 5,
-    vx: -0.1,
-    vy: 0.2
-  },
-  3: {
-    type: 'blob',
-    id: 3,
-    x: 100,
-    y: 200,
-    r: 50,
-    vx: 1,
-    vy: 0
-  }
-};
-
 var io = require('socket.io').listen(5050);
 var game = new require('../common/game.js');
+var level = new require('./level.js');
+
+var gen = new level.Generator({
+  width: game.Game.WIDTH,
+  height: game.Game.HEIGHT,
+  maxSpeed: 0.1,
+  maxRadius: 15,
+  blobCount: 10
+});
 
 var engine = new game.Game();
-engine.load(STATE);
+engine.load(gen.generate());
 
 // Initialize the game loop
 function gameloop() {
