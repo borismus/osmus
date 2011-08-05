@@ -18,8 +18,8 @@ var ThreeRenderer = function(game) {
   console.log(game);
   var VIEW_ANGLE = 45,
       ASPECT = Game.WIDTH / Game.HEIGHT,
-      NEAR = -500,
-      FAR = 500;
+      NEAR = -1000,
+      FAR = 1000;
 
   var container = document.getElementById('container');
   this.renderer = new THREE.WebGLRenderer();
@@ -43,7 +43,7 @@ var ThreeRenderer = function(game) {
   var pointLight = new THREE.PointLight(0xFFFFFF);
   pointLight.position.x = Game.WIDTH / 2.0;
   pointLight.position.y = Game.HEIGHT / 2.0;
-  pointLight.position.z = -400;
+  pointLight.position.z = -500;
   this.scene.addLight(pointLight);
   var ambientLight = new THREE.AmbientLight(0xCCCCCC);
   this.scene.addLight(ambientLight);
