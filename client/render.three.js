@@ -95,8 +95,9 @@ ThreeRenderer.prototype.render = function() {
       this.scene.removeChild(this.geometry[o.id]);
       delete this.geometry[o.id];
       console.log('dead!', o.id);
+    } else {
+      this.updateObject_(o);
     }
-    this.updateObject_(o);
   }
   this.renderer.render(this.scene, this.camera);
   var ctx = this;
