@@ -3,19 +3,25 @@
  * The game instance that's shared across all clients and the server
  */
 var Game = function() {
-  this.timeStamp = new Date();
   this.state = {};
+  this.oldState = {};
 
   // Last used ID
   this.lastId = 0;
   this.callbacks = {};
+
+  // Counter for the number of updates
+  this.updateCount = 0;
 };
 
+Game.UPDATE_INTERVAL = 10;
 Game.MAX_DELTA = 10000;
 Game.WIDTH = 640;
 Game.HEIGHT = 480;
 Game.SHOT_RADIUS_RATIO = 0.1;
-Game.SHOT_SPEED_RATIO = 0.1;
+Game.SHOT_SPEED_RATIO = 1;
+Game.PLAYER_SPEED_RATIO = 0.1;
+Game.TRANSFER_RATE = 0.05;
 
 /**
  * Computes the game state
@@ -23,25 +29,31 @@ Game.SHOT_SPEED_RATIO = 0.1;
  * @return {object} The new game state at that timestamp
  */
 Game.prototype.computeState = function(delta) {
-  var newState = {};
+  var newState = {
+    objects: {},
+    timeStamp: this.state.timeStamp + delta
+  };
+  var newObjects = newState.objects;
+  var objects = this.state.objects;
   // Generate a new state based on the old one
-  for (var objId in this.state) {
-    var obj = this.state[objId];
+  for (var objId in objects) {
+    var obj = objects[objId];
     if (!obj.dead) {
-      newState[obj.id] = obj.computeState(delta);
+      newObjects[obj.id] = obj.computeState(delta);
     }
   }
 
-  // Largest and second largest objects.
-  var largest = 0;
-  var second = 0;
+  // Largest object.
+  var largest = null;
+  // Total area.
+  var total = 0;
 
   // Go through the new state and check for collisions etc, make
   // adjustments accordingly.
-  for (var i in newState) {
-    var o = newState[i];
-    for (var j in newState) {
-      var p = newState[j];
+  for (var i in newObjects) {
+    var o = newObjects[i];
+    for (var j in newObjects) {
+      var p = newObjects[j];
       // Check collisions
       if (o !== p && o.intersects(p)) {
         // Transfer masses around
@@ -56,16 +68,19 @@ Game.prototype.computeState = function(delta) {
       this.repositionInBounds_(o);
     }
 
-    // Get the largest and second largest blobs in the world.
-    if (o.r > largest.r) {
-      second = largest;
+    // Get the largest blob in the world.
+    if (!largest) {
       largest = o;
     }
+    if (o.r > largest.r) {
+      largest = o;
+    }
+    total += o.r;
   }
-  // Victory: largest is significantly larger than second largest.
-  if (largest > second * 1.5) {
+  // Victory conditions!
+  if (largest.r > total/2) {
     console.log('game over!');
-    this.callback_('victory', {winner: largest.id});
+    this.callback_('victory', {id: largest.id});
   }
   return newState;
 };
@@ -75,7 +90,7 @@ Game.prototype.computeState = function(delta) {
  * @param {number} timeStamp Timestamp to compute for
  */
 Game.prototype.update = function(timeStamp) {
-  var delta = timeStamp - this.timeStamp;
+  var delta = timeStamp - this.state.timeStamp;
   if (delta < 0) {
     throw "Can't compute state in the past.";
   }
@@ -83,7 +98,22 @@ Game.prototype.update = function(timeStamp) {
     throw "Can't compute state so far in the future.";
   }
   this.state = this.computeState(delta);
-  this.timeStamp = timeStamp;
+  this.updateCount++;
+};
+
+/**
+ * Set up an accurate timer in JS
+ */
+Game.prototype.updateEvery = function(interval) {
+  var lastUpdate = (new Date()).valueOf();
+  var ctx = this;
+  return setInterval(function() {
+    var date = (new Date()).valueOf();
+    if (date - lastUpdate >= interval) {
+      ctx.update(date);
+      lastUpdate += interval;
+    }
+  }, 0);
 };
 
 /**
@@ -99,7 +129,7 @@ Game.prototype.join = function(id) {
     vy: 0.1,
     r: 20
   });
-  this.state[player.id] = player;
+  this.state.objects[player.id] = player;
   return player.id;
 };
 
@@ -107,20 +137,19 @@ Game.prototype.join = function(id) {
  * Called when a player leaves
  */
 Game.prototype.leave = function(playerId) {
-  delete this.state[playerId];
+  delete this.state.objects[playerId];
 };
 
 /**
  * Called when a player shoots
+ * @param {object} info {id, direction, timeStamp}
  */
-Game.prototype.shoot = function(id, direction) {
-  var player = this.state[id];
+Game.prototype.shoot = function(id, direction, timeStamp) {
+  console.log('adding shot from', this.state.timeStamp - timeStamp, 'ago');
+  var player = this.state.objects[id];
   // Unit vectors.
   var ex = Math.cos(direction);
   var ey = Math.sin(direction);
-  // Delta vectors.
-  var dx = ex * Game.SHOT_SPEED_RATIO;
-  var dy = ey * Game.SHOT_SPEED_RATIO;
   // Create the new blob.
   var newR = player.r * Game.SHOT_RADIUS_RATIO;
   // New blob should be positioned so that it doesn't overlap parent.
@@ -128,22 +157,23 @@ Game.prototype.shoot = function(id, direction) {
     id: this.newId_(),
     x: player.x + (player.r + newR) * ex,
     y: player.y + (player.r + newR) * ey,
-    vx: player.vx + dx,
-    vy: player.vy + dy,
+    vx: player.vx + ex * Game.SHOT_SPEED_RATIO,
+    vy: player.vy + ey * Game.SHOT_SPEED_RATIO,
     r: newR
   });
-  this.state[blob.id] = blob;
+  this.state.objects[blob.id] = blob;
   // Affect the player's velocity, depending on angle, speed and size.
-  player.vx -= dx;
-  player.vy -= dy;
+  player.vx -= ex * Game.PLAYER_SPEED_RATIO;
+  player.vy -= ey * Game.PLAYER_SPEED_RATIO;
   // Affect player's radius
   player.r -= newR;
 };
 
 Game.prototype.getPlayerCount = function() {
   var count = 0;
-  for (var id in this.state) {
-    if (this.state[id].type == 'player') {
+  var objects = this.state.objects;
+  for (var id in objects) {
+    if (objects[id].type == 'player') {
       count++;
     }
   }
@@ -159,11 +189,14 @@ Game.prototype.getPlayerCount = function() {
  * @return {object} JSON of the game state
  */
 Game.prototype.save = function() {
-  var serialized = {};
-  for (var id in this.state) {
-    var obj = this.state[id];
+  var serialized = {
+    objects: {},
+    timeStamp: this.state.timeStamp
+  };
+  for (var id in this.state.objects) {
+    var obj = this.state.objects[id];
     // Serialize to JSON!
-    serialized[id] = obj.toJSON();
+    serialized.objects[id] = obj.toJSON();
   }
 
   return serialized;
@@ -174,13 +207,19 @@ Game.prototype.save = function() {
  * @param {object} gameState JSON of the game state
  */
 Game.prototype.load = function(savedState) {
-  for (var id in savedState) {
-    var obj = savedState[id];
+  console.log(savedState.objects);
+  var objects = savedState.objects;
+  this.state = {
+    objects: {},
+    timeStamp: savedState.timeStamp.valueOf()
+  }
+  for (var id in objects) {
+    var obj = objects[id];
     // Depending on type, instantiate.
     if (obj.type == 'blob') {
-      this.state[obj.id] = new Blob(obj);
+      this.state.objects[obj.id] = new Blob(obj);
     } else if (obj.type == 'player') {
-      this.state[obj.id] = new Player(obj);
+      this.state.objects[obj.id] = new Player(obj);
     }
     // Increment this.lastId
     if (obj.id > this.lastId) {
@@ -212,7 +251,7 @@ Game.prototype.transferMass_ = function(o, p, delta) {
   var overlap = big.overlap(small);
 
   console.log('overlapping', o.id, p.id, 'by', overlap);
-  var diff = 1;
+  var diff = overlap * Game.TRANSFER_RATE;
   small.r -= diff;
   big.r += diff;
 

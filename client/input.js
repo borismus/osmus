@@ -34,7 +34,7 @@ DesktopInput.prototype.onclick = function(event) {
   var cx = event.offsetX;
   var cy = event.offsetY;
   // Get the current player.
-  var player = this.game.state[playerId];
+  var player = this.game.state.objects[playerId];
   // Sometimes the player isn't there.
   if (!player) {
     return;

@@ -9,11 +9,14 @@ function LevelGenerator(params) {
 }
 
 LevelGenerator.prototype.generate = function() {
-  var state = {};
+  var state = {
+    objects: {},
+    timeStamp: new Date()
+  };
   var count = this.blobCount;
   while (count--) {
     var blob = this.createRandomBlob_();
-    state[blob.id] = blob;
+    state.objects[blob.id] = blob;
   }
   return state;
 };

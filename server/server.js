@@ -14,13 +14,7 @@ var engine = new game.Game();
 engine.load(gen.generate());
 
 // Initialize the game loop
-function gameloop() {
-  var time = new Date();
-  // Update the engine
-  engine.update(time);
-  // Ping the clients with the current time
-}
-var timer = setInterval(gameloop, 100);
+var timer = engine.updateEvery(game.Game.UPDATE_INTERVAL);
 var observerCount = 0;
 
 io.sockets.on('connection', function(socket) {
@@ -29,7 +23,9 @@ io.sockets.on('connection', function(socket) {
   var playerId = null;
 
   // When client connects, dump game state
-  socket.emit('state', engine.save());
+  socket.emit('start', {
+    state: engine.save()
+  });
 
   // Client shoots
   socket.on('shoot', function(data) {
@@ -37,14 +33,22 @@ io.sockets.on('connection', function(socket) {
     // Update the game engine
     engine.shoot(playerId, data.direction);
     data.playerId = playerId;
+    data.timeStamp = (new Date()).valueOf();
     // Broadcast that shot was fired.
     io.sockets.emit('shoot', data);
+  });
+
+  socket.on('state', function(data) {
+    socket.emit('state', {
+      state: engine.save()
+    });
   });
 
   // Client joins the game as a player
   socket.on('join', function(data) {
     console.log('recv join', data);
     playerId = engine.join(data.name);
+    data.timeStamp = new Date();
     // Broadcast that client has joined
     socket.broadcast.emit('join', data);
     data.isme = true;
@@ -56,6 +60,7 @@ io.sockets.on('connection', function(socket) {
     console.log('recv leave', data);
     observerCount--;
     engine.leave(playerId);
+    data.timeStamp = new Date();
     // Broadcast that client has joined
     io.sockets.emit('leave', data);
   });
@@ -66,19 +71,33 @@ io.sockets.on('connection', function(socket) {
     engine.leave(playerId);
     // If this was a player, it just left
     if (playerId) {
-      socket.broadcast.emit('leave', {name: playerId});
+      socket.broadcast.emit('leave', {name: playerId, timeStamp: new Date()});
     }
   });
 
   // Periodically emit time sync commands
   var timeSyncTimer = setInterval(function() {
     socket.emit('time', {
-      date: new Date(),
+      timeStamp: (new Date()).valueOf(),
+      lastUpdate: engine.state.timeStamp,
+      updateCount: engine.updateCount,
       observerCount: observerCount
     });
-  }, 5000);
+  }, 2000);
 
+  // When someone dies, let the clients know.
   engine.on('dead', function(data) {
-    io.sockets.emit('leave', {name: data.id});
+    io.sockets.emit('leave', {name: data.id, timeStamp: new Date()});
+  });
+
+  // When the game ends, let the clients know.
+  engine.on('victory', function(data) {
+    io.sockets.emit('victory', {id: data.id});
+    // Stop the server
+    clearInterval(timer);
+    // Restart the game.
+    engine = new game.Game();
+    engine.load(gen.generate());
+    timer = engine.updateEvery(game.Game.UPDATE_INTERVAL);
   });
 });

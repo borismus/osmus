@@ -8,8 +8,9 @@ Multiplayer HTML5 Osmos
 * Open client/index.html - for example on Mac `open client/index.html`
 * Profit
 
-Or actually don't profit since Chrome Dev Channel breaks WebSockets right now.  So
-get an older version - for example, this worked for me:
+Or actually don't profit since Chrome Dev Channel breaks WebSockets
+right now.  So get an older version - for example, this worked for me:
+
 http://build.chromium.org/f/chromium/snapshots/Mac/87978/
 
 # TODO
@@ -20,11 +21,14 @@ http://build.chromium.org/f/chromium/snapshots/Mac/87978/
 * Who is playing now? (DONE)
 * How many people are watching? (DONE)
 * Generate randomized levels. (DONE)
-* Switch to require.js in browser and separate game.js into components
 * Victory conditions (one blob is bigger than the next biggest by a
-  percentage)
-* Better sync (act on server timestamp)
-* Fix up game mechanics (lose mass rather than radius)
+  percentage) (DONE)
+* Better sync
+  * Decouple game progression from rendering (DONE)
+  * Make game state time aware (DONE)
+  * Client-server time sync
+* Fix up game mechanics (transfer area rather than radius)
+* Basic audio w/ audio tag?
 
 ## Future
 
@@ -32,23 +36,40 @@ http://build.chromium.org/f/chromium/snapshots/Mac/87978/
 * Make the game look nice!
 * iPad support
 * iPhone support?
+* Switch to require.js in browser and separate game.js into components
 * Resizing viewports?
+* Support binary sockets
+* Compress network format
 * Multiple rooms?
 
 # Networking
 
-When a client connects, send them the current state of the game.
+When a client connects, send them the current state of the game, as well
+as timestamp on the state, and refresh rate. Client then runs the game
+engine at a fixed interval. The render loop is detatched from the game
+loop.
 
-Periodically (ie. very often), send each client updates from other
-players.
+**Client action**: when the client does something (eg. shoots, disconnects),
+it sends a message to the server. Server then rebroadcasts the message
+with a timestamp. When clients recv the message that some player shot,
+they have to act on it given a previously saved state.
 
-Basic idea: convey current game state to new clients, then convey
-changes in game state (ie. player movements). Also, sync overall state
-periodically (but via ticks).
+Note that the game state progresses only one way (can't go from t1 to
+t0). So we need to maintain an older version of the state in case we get
+an event in the past. If we get an event with an older timestamp, we have
+several options:
 
-Both client and server compute new game state. Server occasionally sends
-tick to client for sync purposes. Also, server sends updated players
-state as they do stuff.
+1. "Rewind" to that last saved position, progress up to the desired
+timestamp, act on the message, and then fast forward to catch up to the
+current time.
+2. Simple but inefficient: poll the server for the new state.
+
+**Tick state**: server periodically pings all clients with the current
+time to make sure that everyone's on the same page. If the client's
+clock is a certain amount out of sync, re-request server state.
+
+**State**: keep track of when the state was updated, as well as objects
+in the world.
 
 ## Client -> server messaging
 

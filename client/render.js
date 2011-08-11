@@ -21,13 +21,11 @@ var CanvasRenderer = function(game) {
 };
 
 CanvasRenderer.prototype.render = function() {
-  var timeStamp = new Date();
-  this.game.update(timeStamp);
-
   this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  var objects = this.game.state.objects;
   // Render the game state
-  for (var i in this.game.state) {
-    var o = this.game.state[i];
+  for (var i in objects) {
+    var o = objects[i];
     if (o.dead) {
       // TODO: render animation
       console.log('dead!', o.id);
