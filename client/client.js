@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
 
 // Globals
+//socket = io.connect('http://smus.com:5050');
 socket = io.connect('http://localhost:5050');
 game = new Game();
 playerId = null;
-skew = 0;
+totalSkew = 0;
 
 var renderer = new Renderer(game);
 var input = new Input(game);
@@ -26,18 +27,17 @@ socket.on('start', function(data) {
   var t0 = data.state.timeStamp;
   var t1 = new Date().valueOf();
   var d = t1 - t0;
-  skew = d;
   var r = Game.UPDATE_INTERVAL;
   var k = Math.floor(d / r);
   var startTime = t0 + k*r;
-  console.log('starting in', t1 - startTime);
+  console.log('skew', d);
 
   // Run the game k times
 
   // Setup the game progress loop
   setTimeout(function() {
     if (new Date() - startTime >= 0) {
-      game.updateEvery(Game.UPDATE_INTERVAL);
+      game.updateEvery(Game.UPDATE_INTERVAL, d);
     }
   }, 0);
 
@@ -75,19 +75,21 @@ socket.on('shoot', function(data) {
 
 // Get a time sync from the server
 socket.on('time', function(data) {
-  socket.emit('state');
-  //console.log('recv time', data);
+  // Compute how much we've skewed from the server
+  var updateDelta = game.state.timeStamp - data.lastUpdate;
+  totalSkew += updateDelta;
+  console.log('totalSkew', totalSkew);
+  if (Math.abs(totalSkew) > 50) {
+    // Fetch the new truth from the server.
+    socket.emit('state');
+    totalSkew = 0;
+  }
+  // Set the true timestamp anyway now.
+  //game.state.timeStamp = data.lastUpdate;
+
   // Number of clients that aren't playing.
   document.getElementById('observer-count').innerText =
       Math.max(data.observerCount - game.getPlayerCount(), 0);
-
-  // Compute how much we've skewed from the server
-  var timeDelta = new Date() - data.timeStamp;
-  var updateDelta = game.state.timeStamp - data.lastUpdate;
-  game.state.timeStamp = data.lastUpdate;
-  //console.log('timeDelta', timeDelta);
-  console.log('updateDelta', updateDelta);
-  //console.log('updateCountDelta', game.updateCount - data.updateCount);
 });
 
 // Server reports that somebody won!

@@ -148,7 +148,6 @@ ThreeRenderer.prototype.setSphereProps_ = function(geo, x, y, r) {
 
 ThreeRenderer.prototype.render = function() {
   var timeStamp = new Date();
-  this.game.update(timeStamp);
   for (var i in this.game.state) {
     var o = this.game.state[i];
     if (o.dead) {

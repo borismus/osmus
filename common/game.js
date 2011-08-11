@@ -104,11 +104,14 @@ Game.prototype.update = function(timeStamp) {
 /**
  * Set up an accurate timer in JS
  */
-Game.prototype.updateEvery = function(interval) {
-  var lastUpdate = (new Date()).valueOf();
+Game.prototype.updateEvery = function(interval, skew) {
+  if (!skew) {
+    skew = 0;
+  }
+  var lastUpdate = (new Date()).valueOf() - skew;
   var ctx = this;
   return setInterval(function() {
-    var date = (new Date()).valueOf();
+    var date = (new Date()).valueOf() - skew;
     if (date - lastUpdate >= interval) {
       ctx.update(date);
       lastUpdate += interval;
