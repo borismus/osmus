@@ -6,7 +6,7 @@ socket = io.connect('http://localhost:5050');
 game = new Game();
 playerId = null;
 totalSkew = 0;
-alert = smoke.signal;
+loopTimer = null;
 
 var renderer = new Renderer(game);
 var input = new Input(game);
@@ -21,7 +21,7 @@ socket.on('start', function(data) {
   // Get the initial time to calibrate synchronization.
   var startDelta = new Date().valueOf() - data.state.timeStamp;
   // Setup the game progress loop
-  game.updateEvery(Game.UPDATE_INTERVAL, startDelta);
+  loopTimer = game.updateEvery(Game.UPDATE_INTERVAL, startDelta);
 
   // Start the renderer.
   renderer.render();
@@ -85,21 +85,20 @@ socket.on('time', function(data) {
 socket.on('victory', function(data) {
   if (playerId) {
     if (data.id == playerId) {
-      alert('you won!');
+      gameover('you won! play again?');
     } else {
-      alert(data.id + ' won and you lost!');
+      gameover(data.id + ' won and you lost! play again?');
     }
   } else {
-    alert('game over. ' + data.id + ' won!');
+    gameover('game over. ' + data.id + ' won! play again?');
   }
-  window.location.reload();
 });
 
 game.on('dead', function(data) {
   // Someone died :(
   // If it's the player on this client, end game!
   if (data.id == playerId) {
-    alert('sorry, you died :(');
+    gameover('sorry, you died :( play again?');
   }
 });
 
@@ -108,5 +107,16 @@ game.on('dead', function(data) {
 game.on('victory', function(data) {
   // Somebody won!
 });
+
+function gameover(msg) {
+  smoke.confirm(msg, function(yes) {
+    if (yes) {
+      window.location.reload();
+    } else {
+      smoke.signal('fine, keep watching');
+      clearInterval(loopTimer);
+    }
+  });
+}
 
 });

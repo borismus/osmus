@@ -11,6 +11,7 @@ function AudioTagSoundManager() {
 
 AudioTagSoundManager.prototype.playSoundtrack = function() {
   this.soundtrack.src = 'sounds/soundtrack.mp3';
+  this.soundtrack.volume = 0.5;
   this.soundtrack.play();
 };
 

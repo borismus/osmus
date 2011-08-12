@@ -188,7 +188,7 @@ Game.prototype.shoot = function(id, direction, timeStamp) {
   player.r -= newR;
 
   // Check if we've suicided
-  if (player.r <= 1) {
+  if (player.r <= 2) {
     player.dead = true;
     this.callback_('dead', {id: player.id, type: player.type});
   }
