@@ -6,7 +6,6 @@ socket = io.connect('http://localhost:5050');
 game = new Game();
 playerId = null;
 totalSkew = 0;
-loopTimer = null;
 
 var renderer = new Renderer(game);
 var input = new Input(game);
@@ -21,7 +20,7 @@ socket.on('start', function(data) {
   // Get the initial time to calibrate synchronization.
   var startDelta = new Date().valueOf() - data.state.timeStamp;
   // Setup the game progress loop
-  loopTimer = game.updateEvery(Game.UPDATE_INTERVAL, startDelta);
+  game.updateEvery(Game.UPDATE_INTERVAL, startDelta);
 
   // Start the renderer.
   renderer.render();
@@ -114,7 +113,6 @@ function gameover(msg) {
       window.location.reload();
     } else {
       smoke.signal('fine, keep watching');
-      clearInterval(loopTimer);
     }
   });
 }
