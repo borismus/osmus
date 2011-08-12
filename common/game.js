@@ -12,6 +12,7 @@ var Game = function() {
 
   // Counter for the number of updates
   this.updateCount = 0;
+  // Pla
 };
 
 Game.UPDATE_INTERVAL = 10;
@@ -123,13 +124,28 @@ Game.prototype.updateEvery = function(interval, skew) {
  * Called when a new player joins
  */
 Game.prototype.join = function(id) {
+  var x, y, vx, vy;
+  switch (this.getPlayerCount() % 4) {
+    case 0:
+      x = 0; y = 0; vx = 0.1; vy = 0.1;
+      break;
+    case 1:
+      x = 640; y = 0; vx = -0.1; vy = 0.1;
+      break;
+    case 2:
+      x = 0; y = 480; vx = 0.1; vy = -0.1;
+      break;
+    case 3:
+      x = 640; y = 480; vx = -0.1; vy = -0.1;
+      break;
+  }
   // Add the player to the world
   var player = new Player({
     id: id,
-    x: 300,
-    y: 300,
-    vx: 0.1,
-    vy: 0.1,
+    x: x,
+    y: y,
+    vx: vx,
+    vy: vy,
     r: 20
   });
   this.state.objects[player.id] = player;
@@ -170,6 +186,12 @@ Game.prototype.shoot = function(id, direction, timeStamp) {
   player.vy -= ey * Game.PLAYER_SPEED_RATIO;
   // Affect player's radius
   player.r -= newR;
+
+  // Check if we've suicided
+  if (player.r <= 1) {
+    player.dead = true;
+    this.callback_('dead', {id: player.id, type: player.type});
+  }
 };
 
 Game.prototype.getPlayerCount = function() {
@@ -261,7 +283,6 @@ Game.prototype.transferMass_ = function(o, p, delta) {
   // Check if we've killed the shrinking cell
   if (small.r <= 1) {
     small.dead = true;
-    console.log('killed', small.id);
     this.callback_('dead', {id: small.id, type: small.type});
   }
 };
@@ -325,6 +346,9 @@ Game.prototype.on = function(event, callback) {
   //   }
   // });
   this.callbacks[event] = callback;
+};
+
+Game.prototype.onBlah = function() {
 };
 
 /**

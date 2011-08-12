@@ -27,8 +27,10 @@ http://build.chromium.org/f/chromium/snapshots/Mac/87978/
   * Decouple game progression from rendering (DONE)
   * Make game state time aware (DONE)
   * Client-server time sync
+* Fix threeJS client (DONE)
+* Basic audio and music w/ audio tag (DONE)
+* Switch away from alerts to custom dialogs (DONE)
 * Fix up game mechanics (transfer area rather than radius)
-* Basic audio w/ audio tag?
 
 ## Future
 

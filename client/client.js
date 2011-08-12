@@ -6,40 +6,22 @@ socket = io.connect('http://localhost:5050');
 game = new Game();
 playerId = null;
 totalSkew = 0;
+alert = smoke.signal;
 
 var renderer = new Renderer(game);
 var input = new Input(game);
+sound = new SoundManager();
 
 // Get the initial game state
 socket.on('start', function(data) {
+  sound.playSoundtrack();
   console.log('recv state', data);
   // Load the game
   game.load(data.state);
   // Get the initial time to calibrate synchronization.
-  // scenario: t0 = server time; t1 = client time; r = refresh rate;
-  // goal: server and client interval start should be synced
-  // so we take server state, load into client.
-  // then we wait until t2 == t0 + k*r to start the timer, but progress
-  // the game state k times beforehand.
-  // 1. compute k
-  // 2. run game state k times
-  // 3. wait for t1 - (t0 + k*r) ms before starting.
-  var t0 = data.state.timeStamp;
-  var t1 = new Date().valueOf();
-  var d = t1 - t0;
-  var r = Game.UPDATE_INTERVAL;
-  var k = Math.floor(d / r);
-  var startTime = t0 + k*r;
-  console.log('skew', d);
-
-  // Run the game k times
-
+  var startDelta = new Date().valueOf() - data.state.timeStamp;
   // Setup the game progress loop
-  setTimeout(function() {
-    if (new Date() - startTime >= 0) {
-      game.updateEvery(Game.UPDATE_INTERVAL, d);
-    }
-  }, 0);
+  game.updateEvery(Game.UPDATE_INTERVAL, startDelta);
 
   // Start the renderer.
   renderer.render();
@@ -57,6 +39,8 @@ socket.on('join', function(data) {
     playerId = data.name;
   }
   document.getElementById('player-count').innerText = game.getPlayerCount();
+  // Get a fresh state
+  socket.emit('state');
 });
 
 // A client leaves.
@@ -64,12 +48,17 @@ socket.on('leave', function(data) {
   console.log('recv leave', data);
   game.leave(data.name);
   document.getElementById('player-count').innerText = game.getPlayerCount();
+  // Get a fresh state
+  socket.emit('state');
 });
 
 // A client shoots.
 socket.on('shoot', function(data) {
   console.log('recv shoot', data.timeStamp, (new Date()).valueOf());
+  // Play shoot sound effect
+  sound.playBloop();
   game.shoot(data.playerId, data.direction, data.timeStamp);
+  // Get a fresh state
   socket.emit('state');
 });
 

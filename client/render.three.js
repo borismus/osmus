@@ -148,8 +148,9 @@ ThreeRenderer.prototype.setSphereProps_ = function(geo, x, y, r) {
 
 ThreeRenderer.prototype.render = function() {
   var timeStamp = new Date();
-  for (var i in this.game.state) {
-    var o = this.game.state[i];
+  var objects = this.game.state.objects;
+  for (var i in objects) {
+    var o = objects[i];
     if (o.dead) {
       // TODO: render animation
       this.scene.removeChild(this.geometry[o.id]);

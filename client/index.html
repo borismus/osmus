@@ -4,19 +4,23 @@
     <title>MOSMOS</title>
 
     <script src="lib/socket.io.js"></script>
-    <script src="client.js"></script>
     <script src="render.js"></script>
     <script src="input.js"></script>
+    <script src="sound.js"></script>
+    <script src="client.js"></script>
+    <script src="lib/smoke.min.js"></script>
     <script src="../common/game.js"></script>
 
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Orbitron:900|Abel">
     <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/smoke.css">
   </head>
   <body>
 
     <div id="outer">
       <div id="logo">mosmos</div>
       <canvas id="canvas" width="640" height="480"></canvas>
+      <audio id="audio"></audio>
 
       <div id="hud" class="clearfix">
         <button id="join">Join</button>
