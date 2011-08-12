@@ -348,9 +348,6 @@ Game.prototype.on = function(event, callback) {
   this.callbacks[event] = callback;
 };
 
-Game.prototype.onBlah = function() {
-};
-
 /**
  * Instance of a blob in the world
  */
