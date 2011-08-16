@@ -1,0 +1,221 @@
+<p>One day I had some friends over at my house showing me some cool iPad
+games. One of the games was Osmos, also available on OS X, developed by
+an indie Canadian studio called <a href="http://www.hemispheregames.com">Hemisphere Games</a>. You control a
+little blob that floats in 2D space, and the only thing you can do is
+shoot pieces of yourself in a given direction, which propels you in the
+opposite direction. The rules of the game are dead simple, and follow
+directly from conservation of mass and energy.</p>
+<p>This game really caught my attention, because of its simplicity, depth,
+meditative pace and distinct lack of multiplayer support, which struck
+me as a potentially very interesting problem to tackle. And so,
+<a href="http://mu.smus.com/">mosmos</a> was born.</p>
+<h2>Design considerations</h2>
+<p>I began development with multiplayer in mind. I knew at a high level
+that this meant tricky synchronization issues, but didn't know much
+beyond that. The obvious design conclusion from a bit of research was
+that to have any sort of shared experience, the true game state needs to
+be on the server. But of course, since clients can't be perpetually
+synchronized to the server at 30 or 60 FPS, clients needs to have some
+brains too. Now that we're in the ubiquitous JavaScript era, that just
+means running the shared game code in <a href="http://nodejs.org/">node.js</a>.</p>
+<p>Also obvious was the need for bidirectional client-server communication,
+which is essential for any hopes of real time synchronization. Luckily
+this is provided by <a href="http://dev.w3.org/html5/websockets/">Web Sockets</a> which is a thin layer above
+TCP, and if you prefer to hide the (not so gory) details, these can be
+abstracted further by the [socket.io][io] library.</p>
+<p>Finally, I wanted the game to be written in distinct, loosely coupled
+components both to make the codebase more approachable for other
+contributors, and to make it easy to experiment with interchangeable
+technologies.</p>
+<h2>Game architecture</h2>
+<p><img alt="architecture" src="architecture.png" /></p>
+<p>Mosmos uses a shared game engine that runs in both the browser and on
+the server. The engine is a simple state machine whose primary function
+is to compute the next game state as a function of time:</p>
+<pre><code>Game.prototype.computeState = function(delta) {
+  var newState = {};
+  // Compute a bunch of stuff based on this.state
+  return newState;
+}
+</code></pre>
+<p>The client is composed of three main components: a renderer, input
+manager and sound manager. I built a very simple canvas-based renderer
+that draws blobs as red circles, and player blobs are green ones. My
+colleague <a href="http://twitter.com/kurrik">Arne Roomann-Kurrik</a> wrote an alternative
+<a href="https://github.com/mrdoob/three.js/">three.js</a> based renderer with some epic shaders and shadows.</p>
+<p>The sound manager handles playback of both the background music (taken
+from <a href="http://feryl.bandcamp.com/album/8-bit-magic-a-module-chiptune-collection">8-bit Magic</a>) and sound effects. The current implementation
+uses audio tags, with two <code>&lt;audio&gt;</code> elements, one for the background
+music channel, and one for the sound effects. There are known
+limitations of this approach, but given the modularity of this
+implementation, can be swapped out for one that uses Chrome's 
+<a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">Web Audio API</a> or Firefox's <a href="https://wiki.mozilla.org/Audio_Data_API">Audio Data API</a>.</p>
+<p>Finally, the input manager handles mouse events, but can be replaced
+with one that uses touch instead, for a mobile version. In the mobile
+context, it will likely make sense to use CSS3 transformations instead
+of canvas, since CSS3 is hardware accelerated on iOS, while HTML5 canvas
+still isn't, and WebGL is not implemented.</p>
+<h2>Shared JS modules</h2>
+<p>Module loaders are a mess. There's the CommonJS spec, RequireJS library
+and node.js require system, none of which play nicely together. If you
+want to share code between client and server (one of the big wins of JS
+on the server) without a module loader, you can use this pattern:</p>
+<pre><code>(function(exports) {
+
+var MyClass = function() { /* ... */ };
+var myObject = {};
+
+exports.MyClass = MyClass;
+exports.myObject = MyObject;
+
+})(typeof global === "undefined" ? window : exports);
+</code></pre>
+<p>This way, node.js <code>require()</code> will be happy, and you can also safely
+include the file in a <code>&lt;script&gt;</code> tag without polluting your namespace.</p>
+<p>Unfortunately this only works well for one module. As soon as you have
+multiple modules depending on each other, the difference between node
+require's namespacing and browser's inclusion becomes painfully
+apparent and requires more hacks.</p>
+<p>Another approach is to use <a href="http://substack.net/posts/24ab8c/browserify-browser-side-require-for-your-node-js">browserify</a> to bundle all JS and emulate
+requires in the browser. This approach relies on node.js to serve the
+generated JS, but can be configured to pre-generate the JS that can be
+served statically without node. This approach introduces some overhead:</p>
+<ol>
+<li>Extra build step for deploying (not really a big deal)</li>
+<li>Performance overhead of whatever mechanism browserify uses to allow
+   <code>require()</code> calls.</li>
+</ol>
+<p>I found out about this a bit late, and didn't have a need for multiple
+shared javascript files, but might be switching to this approach in a
+future version of mosmos.</p>
+<h2>Network synchronization</h2>
+<p>The main problem to tackle in multiplayer game development is client
+synchronization. In the case of mosmos, since both the client and server
+know how to generate state, synchronization should just be a simple
+matter of keeping the clients aligned to the server.</p>
+<p>In a networked environment, it's best to save bandwidth, which means
+sending as little data across the wire as rarely as possible. Of course,
+you want to provide a good user experience too!</p>
+<h3>Initial strategy</h3>
+<p>My naive first stab at this problem was to run the game engine on a
+fixed interval on the server (using <code>setInterval</code>), and use
+<code>requestAnimationFrame</code> to trigger rendering on the client. I recognized
+that there may be some desynchronization as a result of this approach,
+so had provisions to update the game state periodically (via the server
+sending a tick, so that the clients could take network latency into
+account).</p>
+<p><strong>Problem</strong>: this approach led to very quick client/server
+desynchronization. The problem is that requestAnimationFrame calls back
+at unknown periods, while the server runs on a fixed clock. It's easy to
+see how a desynchronization might happen if the client and server run at
+different periods.</p>
+<p><img alt="desync" src="desync.png" /></p>
+<p>Note here that while the example shows a very different refresh rate,
+you can imagine how small differences between refresh rates would add up
+to lead to completely different game states for a large enough number of
+iterations.</p>
+<h3>Sync client and server clocks</h3>
+<p>So the solution to the above problem is to keep the server and client
+game updates synchronized at the same rate. In other words, they should
+ideally start at the same time, and then issue updates to the game
+engine at a fixed tick rate. We can still keep the renderer on a
+<code>requestAnimationFrame</code> governed callback. So the code looks something
+like this:</p>
+<pre><code>// Update on a timer.
+setInterval(function() {
+  game.update(new Date());
+}, Game.UPDATE_INTERVAL)
+
+// Render independently (render calls requestAnimationFrame)
+game.render();
+</code></pre>
+<p><strong>Problem</strong>: the server and client still go out of sync rather quickly
+due to <a href="http://www.sitepoint.com/creating-accurate-timers-in-javascript/">inaccuracies of JavaScript timers</a>.</p>
+<h3>Better sync via custom timers</h3>
+<p>The obvious solution is to create a more accurate timer in JavaScript.
+My first approach was to set up a very quickly firing timer, which would
+then use JavaScript dates to determine precisely how much time passed.</p>
+<pre><code>var e = 1; // or 0
+Game.prototype.updateEvery = function(interval) {
+  var lastUpdate = new Date();
+  var ctx = this;
+  return setInterval(function() {
+    var date = new Date();
+    if (date - lastUpdate &gt;= interval) {
+      ctx.update(date);
+      lastUpdate = date;
+    }
+  }, e);
+};
+</code></pre>
+<p>In my testing on Chrome, the browser didn't fire more often than about
+2-3ms, regardless of the value of e &lt; 2.</p>
+<p><strong>Problem</strong>: this is better but is still problematic, since the interval
+function doesn't actually fire every ms and client/server eventually go
+out of sync.</p>
+<p>Note that I found slightly better sync performance if instead of
+reassigning the date with <code>lastUpdate = date</code>, I used</p>
+<pre><code>lastUpdate += interval;
+</code></pre>
+<h3>Input handling</h3>
+<p>So far we haven't even considered player input, which is the main thing
+that we want to synchronize over the network. In mosmos, there's just
+three kinds of input a client can do:</p>
+<ol>
+<li>Join the game</li>
+<li>Shoot a piece of yourself in some direction</li>
+<li>Leave the game</li>
+</ol>
+<p>When a player does something, the client sends that event to the server,
+which posts that notification to all clients (including the originator).
+At this point, clients render the change.</p>
+<p><strong>Problem</strong>: clients get updates at different times, leading to further
+desynchronization.</p>
+<h3>Simple dead reckoning</h3>
+<p>The approach I ended up taking is similar to <a href="http://www.gamasutra.com/view/feature/3230/dead_reckoning_latency_hiding_for_.php">dead reckoning</a>, in
+which the server periodically sends the world state to the client, but
+lets the client do intermediate computations. In the traditional game
+networking DR model, the client does some simple approximation of the
+future, but since mosmos shares the full game engine between client and
+server, we do much better and can afford to send updates less often.</p>
+<h3>Victory conditions</h3>
+<p>At a certain point in time, mosmos decides that the game is over and
+declares a player or non-player blob the victor. The game state machine
+is pretty darn simple:</p>
+<p><img alt="statemachine" src="statemachine.png" /></p>
+<p>If our client and server are out of sync, it's possible to imagine one
+client's state indicating that a player is victorious, while according
+to the server, the game is not finished. To avoid these "false
+victories", mosmos doesn't let clients decide when the game is over.
+Instead, only the server decides, and when victory is reached, sends a
+message to the clients designating the victor.</p>
+<h2>Even better networking</h2>
+<p>There are a few things I didn't get to implement but would like to in
+the future!</p>
+<h3>Timestamp everything</h3>
+<p>As mentioned in the input handling section, when server updates the
+clients with an event like "player X shot in direction D", these updates
+can come at different times, leading to desynchronization. The solution
+I came up with was for the server to regularly send time updates to
+clients, and for the clients to recompute game state depending on that
+time. Also, all input events should be timestamped by the server to make
+the clients more aware of when it happened.</p>
+<p>This approach is tricky if the client is ahead of the server, since it's
+impossible to, given a game state, retroactively compute the previous
+game state. As a workaround, it's possible to keep track of a game state
+in the past, and use it as a keyframe to use as a starting point
+for the computation. For example, if a client is at <code>t2</code>, but gets an
+update from the server saying that player <code>X</code> shot in a direction <code>d</code>
+at <code>t1</code>, the client can look at it's old state from <code>t0</code>, fast forward
+to <code>t1</code>, insert the event, and fast forward back to <code>t2</code>.</p>
+<p><strong>Problem</strong>: if your state is already out of sync from previously
+accrued errors, the errors will just propagate onward. Also, the above
+is a rather complex approach that I never implemented.</p>
+<h3>Data compression</h3>
+<p>We want to minimize the amount of data sent across the network, so it
+makes sense to compress what we send. The best way to do this is to
+employ a binary format, though unfortunately there is no binary Web
+Socket support yet. The next best option is to use a compressed text
+format. This could be implemented by writing a layer on top of socket.io
+which would know how to pack and unpack JSON state in a more intelligent
+way.</p>
