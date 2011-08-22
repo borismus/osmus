@@ -49,8 +49,9 @@ CanvasRenderer.prototype.renderObject_ = function(obj) {
   ctx.closePath();
   ctx.fill();
   if (obj.type == 'player') {
-    ctx.font = "10pt Arial";
+    ctx.font = "8pt monospace";
     ctx.fillStyle = 'black';
+    ctx.textAlign = 'center';
     ctx.fillText(obj.id, obj.x, obj.y);
   }
 

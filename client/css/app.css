@@ -13,11 +13,13 @@ body {
 }
 
 #logo {
-  margin: 24px auto 12px auto;
-  color: transparent;
-  background: transparent url(../images/logo.png) no-repeat scroll center center;
+  margin: 10px auto;
   width: 504px;
-  height: 99px;
+  color: white;
+  text-align: center;
+  font-family: 'Bowlby One SC', sans-serif;
+  font-size: 82px;
+  -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), color-stop(50%, rgba(0,0,0,.5)), to(rgba(0,0,0,1)));
 }
 
 #outer #canvas {
@@ -37,9 +39,6 @@ body {
 }
 
 #hud {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: justify;
 }
 
 button {
@@ -50,7 +49,6 @@ button {
   font-size: 28px;
   padding: 15px 15px;
   width: 4em;
-  
           box-sizing: content-box;
   -webkit-box-sizing: content-box;
      -moz-box-sizing: content-box;
@@ -58,6 +56,10 @@ button {
           border-radius: 5px;
   -webkit-border-radius: 5px;
      -moz-border-radius: 5px;  
+}
+
+#buttons {
+  float: left;
 }
 
 button {
@@ -98,6 +100,7 @@ button:focus {
 }
 
 #info {
+  float: right;
   font-size: 24px;
   text-shadow: 0 2px 5px #000;
   color: white;

@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>MOSMOS</title>
+    <title>OSMUS: Multiplayer Osmos Tech Demo</title>
 
     <script src="lib/socket.io.js"></script>
     <script src="render.js"></script>
@@ -14,16 +14,22 @@
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Orbitron:900|Abel">
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="lib/smoke.css">
+    <link href='http://fonts.googleapis.com/css?family=Bowlby+One+SC' rel='stylesheet' type='text/css'>
   </head>
   <body>
 
     <div id="outer">
-      <div id="logo">mosmos</div>
+      <div id="logowrap">
+        <div id="logo">o&sdot;s&sdot;m&sdot;u&sdot;s</div>
+      </div>
       <canvas id="canvas" width="640" height="480"></canvas>
       <audio id="audio"></audio>
 
-      <div id="hud" class="clearfix">
-        <button id="join">Join</button>
+      <div id="hud">
+        <div id="buttons">
+          <button id="join">Join</button>
+          <button id="music">Music</button>
+        </div>
 
         <div id="info">
           <div>

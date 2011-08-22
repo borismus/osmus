@@ -12,14 +12,13 @@ var Game = function() {
 
   // Counter for the number of updates
   this.updateCount = 0;
-  // Pla
 };
 
-Game.UPDATE_INTERVAL = 10;
+Game.UPDATE_INTERVAL = Math.round(1000 / 30);
 Game.MAX_DELTA = 10000;
 Game.WIDTH = 640;
 Game.HEIGHT = 480;
-Game.SHOT_RADIUS_RATIO = 0.1;
+Game.SHOT_AREA_RATIO = 0.02;
 Game.SHOT_SPEED_RATIO = 1;
 Game.PLAYER_SPEED_RATIO = 0.1;
 Game.TRANSFER_RATE = 0.05;
@@ -58,7 +57,7 @@ Game.prototype.computeState = function(delta) {
       // Check collisions
       if (o !== p && o.intersects(p)) {
         // Transfer masses around
-        this.transferMass_(o, p, delta);
+        this.transferAreas_(o, p, delta);
       }
     }
     // At this point, o is not collided with any objects.
@@ -169,24 +168,25 @@ Game.prototype.shoot = function(id, direction, timeStamp) {
   // Unit vectors.
   var ex = Math.cos(direction);
   var ey = Math.sin(direction);
+  // See how much area we will need to transfer.
+  var diff = player.area() * Game.SHOT_AREA_RATIO;
   // Create the new blob.
-  var newR = player.r * Game.SHOT_RADIUS_RATIO;
-  // New blob should be positioned so that it doesn't overlap parent.
   var blob = new Blob({
     id: this.newId_(),
-    x: player.x + (player.r + newR) * ex,
-    y: player.y + (player.r + newR) * ey,
     vx: player.vx + ex * Game.SHOT_SPEED_RATIO,
     vy: player.vy + ey * Game.SHOT_SPEED_RATIO,
-    r: newR
+    r: 0
   });
   this.state.objects[blob.id] = blob;
+  // New blob should be positioned so that it doesn't overlap parent.
+  blob.x = player.x + (player.r + blob.r) * ex;
+  blob.y = player.y + (player.r + blob.r) * ey;
   // Affect the player's velocity, depending on angle, speed and size.
   player.vx -= ex * Game.PLAYER_SPEED_RATIO;
   player.vy -= ey * Game.PLAYER_SPEED_RATIO;
-  // Affect player's radius
-  player.r -= newR;
-
+  // Affect blob and player radius.
+  blob.transferArea(diff);
+  player.transferArea(-diff);
   // Check if we've suicided
   if (player.r <= 2) {
     player.dead = true;
@@ -232,7 +232,7 @@ Game.prototype.save = function() {
  * @param {object} gameState JSON of the game state
  */
 Game.prototype.load = function(savedState) {
-  console.log(savedState.objects);
+  //console.log(savedState.objects);
   var objects = savedState.objects;
   this.state = {
     objects: {},
@@ -253,6 +253,10 @@ Game.prototype.load = function(savedState) {
   }
 };
 
+Game.prototype.blobExists = function(blobId) {
+  return this.state.objects[blobId] !== undefined;
+};
+
 /***********************************************
  * Helper functions
  */
@@ -260,8 +264,8 @@ Game.prototype.load = function(savedState) {
 /**
  * Transfers mass between two objects.
  */
-Game.prototype.transferMass_ = function(o, p, delta) {
-  console.log('deadness', o.id, o.dead, p.id, p.dead);
+Game.prototype.transferAreas_ = function(o, p, delta) {
+  //console.log('deadness', o.id, o.dead, p.id, p.dead);
   if (o.dead || p.dead) {
     return;
   }
@@ -275,16 +279,18 @@ Game.prototype.transferMass_ = function(o, p, delta) {
   }
   var overlap = big.overlap(small);
 
-  console.log('overlapping', o.id, p.id, 'by', overlap);
+  //console.log('overlapping', o.id, p.id, 'by', overlap);
   var diff = overlap * Game.TRANSFER_RATE;
-  small.r -= diff;
-  big.r += diff;
+  small.transferArea(-diff);
+  big.transferArea(diff);
 
   // Check if we've killed the shrinking cell
   if (small.r <= 1) {
     small.dead = true;
     this.callback_('dead', {id: small.id, type: small.type});
   }
+
+  //console.log('sanity check: total area', small.r + big.r);
 };
 
 /**
@@ -389,6 +395,16 @@ Blob.prototype.area = function() {
   return Math.PI * this.r * this.r;
 };
 
+/**
+ * Transfers some area to (or from if area < 0) this blob.
+ */
+Blob.prototype.transferArea = function(area) {
+  var sign = 1;
+  if (area < 0) {
+    sign = -1;
+  }
+  this.r += sign * Math.sqrt(Math.abs(area) / Math.PI);
+};
 
 /**
  * Create a new state for this blob in the future

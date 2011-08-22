@@ -13,7 +13,7 @@ sound = new SoundManager();
 
 // Get the initial game state
 socket.on('start', function(data) {
-  sound.playSoundtrack();
+  //sound.toggleSoundtrack();
   console.log('recv state', data);
   // Load the game
   game.load(data.state);
@@ -37,7 +37,6 @@ socket.on('join', function(data) {
   if (data.isme) {
     playerId = data.name;
   }
-  document.getElementById('player-count').innerText = game.getPlayerCount();
   // Get a fresh state
   socket.emit('state');
 });
@@ -45,8 +44,10 @@ socket.on('join', function(data) {
 // A client leaves.
 socket.on('leave', function(data) {
   console.log('recv leave', data);
+  if (playerId == data.name) {
+    gameover('you were absorbed. play again?');
+  }
   game.leave(data.name);
-  document.getElementById('player-count').innerText = game.getPlayerCount();
   // Get a fresh state
   socket.emit('state');
 });
@@ -54,6 +55,10 @@ socket.on('leave', function(data) {
 // A client shoots.
 socket.on('shoot', function(data) {
   console.log('recv shoot', data.timeStamp, (new Date()).valueOf());
+  // Ensure that this client is alive.
+  if (!game.blobExists(data.playerId)) {
+    return;
+  }
   // Play shoot sound effect
   sound.playBloop();
   game.shoot(data.playerId, data.direction, data.timeStamp);
@@ -78,13 +83,14 @@ socket.on('time', function(data) {
   // Number of clients that aren't playing.
   document.getElementById('observer-count').innerText =
       Math.max(data.observerCount - game.getPlayerCount(), 0);
+  document.getElementById('player-count').innerText = game.getPlayerCount();
 });
 
 // Server reports that somebody won!
 socket.on('victory', function(data) {
   if (playerId) {
     if (data.id == playerId) {
-      gameover('you won! play again?');
+      gameover('you win! play again?');
     } else {
       gameover(data.id + ' won and you lost! play again?');
     }
@@ -93,27 +99,29 @@ socket.on('victory', function(data) {
   }
 });
 
-game.on('dead', function(data) {
-  // Someone died :(
-  // If it's the player on this client, end game!
-  if (data.id == playerId) {
-    gameover('sorry, you died :( play again?');
-  }
-});
-
 // Note: do not use this as the definitive game win condition because we may be
 // out of sync with the truth on the server!
 game.on('victory', function(data) {
   // Somebody won!
 });
+game.on('dead', function(data) {
+  // Someone died :(
+});
+
 
 function gameover(msg) {
   smoke.confirm(msg, function(yes) {
-    if (yes) {
-      window.location.reload();
+    if (yes && playerId) {
+      // Reset the current player.
+      socket.emit('join', {name: playerId});
     } else {
-      smoke.signal('fine, keep watching');
+      smoke.signal('watching mode');
+      // Show the button
+      document.querySelector('#join').style.display = 'inline';
+      playerId = null;
     }
+    // Get a fresh state
+    socket.emit('state');
   });
 }
 

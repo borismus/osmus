@@ -7,13 +7,9 @@ function AudioTagSoundManager() {
   this.audio = document.createElement('audio');
   this.soundtrack = document.createElement('audio');
   this.soundtrack.setAttribute('loop', true);
-}
-
-AudioTagSoundManager.prototype.playSoundtrack = function() {
   this.soundtrack.src = 'sounds/soundtrack.mp3';
   this.soundtrack.volume = 0.5;
-  this.soundtrack.play();
-};
+}
 
 AudioTagSoundManager.prototype.playBloop = function() {
   var url = BLOOPS[Math.floor(Math.random() * BLOOPS.length)];
@@ -22,6 +18,14 @@ AudioTagSoundManager.prototype.playBloop = function() {
 };
 
 AudioTagSoundManager.prototype.playJoin = function() {
+};
+
+AudioTagSoundManager.prototype.toggleSoundtrack = function() {
+  if (this.soundtrack.paused) {
+    this.soundtrack.play();
+  } else {
+    this.soundtrack.pause();
+  }
 };
 
 exports.SoundManager = AudioTagSoundManager;

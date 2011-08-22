@@ -30,6 +30,10 @@ io.sockets.on('connection', function(socket) {
   // Client shoots
   socket.on('shoot', function(data) {
     console.log('recv shoot', data);
+    // Check that the player is still alive
+    if (!engine.blobExists(playerId)) {
+      return;
+    }
     // Update the game engine
     engine.shoot(playerId, data.direction);
     data.playerId = playerId;

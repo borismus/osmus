@@ -18,11 +18,29 @@ function DesktopInput(game) {
   join.addEventListener('click', function(e) {
     ctx.onjoin.call(ctx, e);
   });
+
+  // Bind to music button.
+  var music = document.getElementById('music');
+  music.addEventListener('click', function(e) {
+    ctx.onmusic.call(ctx, e);
+  });
 }
 
 DesktopInput.prototype.onjoin = function() {
-  var name = prompt("your name");
-  socket.emit('join', {name: name});
+  if (!playerId) {
+    smoke.prompt("what is your name", function(name) {
+      if (name) {
+        socket.emit('join', {name: name});
+        document.querySelector('#join').style.display = 'none';
+      } else {
+        smoke.signal('sorry, name required');
+      }
+    });
+  }
+};
+
+DesktopInput.prototype.onmusic = function() {
+  sound.toggleSoundtrack();
 };
 
 DesktopInput.prototype.onleave = function() {
