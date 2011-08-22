@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
 
 // Globals
-//socket = io.connect('http://smus.com:5050');
+//socket = io.connect('http://o.smus.com:5050');
 socket = io.connect('http://localhost:5050');
 game = new Game();
 playerId = null;
@@ -42,11 +42,11 @@ socket.on('join', function(data) {
   game.join(data.name);
   if (data.isme) {
     playerId = data.name;
+    // Set the hash
+    window.location.hash = '#' + data.name;
   }
   // Get a fresh state
   socket.emit('state');
-  // Set the hash
-  window.location.hash = '#' + data.name;
 });
 
 // A client leaves.
