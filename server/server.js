@@ -51,6 +51,10 @@ io.sockets.on('connection', function(socket) {
   // Client joins the game as a player
   socket.on('join', function(data) {
     console.log('recv join', data);
+    if (engine.blobExists(data.name)) {
+      // Don't allow duplicate names.
+      return;
+    }
     playerId = engine.join(data.name);
     data.timeStamp = new Date();
     // Broadcast that client has joined

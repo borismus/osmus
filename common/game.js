@@ -12,6 +12,8 @@ var Game = function() {
 
   // Counter for the number of updates
   this.updateCount = 0;
+  // Timer for the update loop.
+  this.timer = null;
 };
 
 Game.UPDATE_INTERVAL = Math.round(1000 / 30);
@@ -110,13 +112,18 @@ Game.prototype.updateEvery = function(interval, skew) {
   }
   var lastUpdate = (new Date()).valueOf() - skew;
   var ctx = this;
-  return setInterval(function() {
+  this.timer = setInterval(function() {
     var date = (new Date()).valueOf() - skew;
     if (date - lastUpdate >= interval) {
       ctx.update(date);
       lastUpdate += interval;
     }
   }, 0);
+  return this.timer;
+};
+
+Game.prototype.over = function() {
+  clearInterval(this.timer);
 };
 
 /**

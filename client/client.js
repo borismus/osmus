@@ -24,6 +24,12 @@ socket.on('start', function(data) {
 
   // Start the renderer.
   renderer.render();
+  // Check if there's a name specified
+  if (window.location.hash) {
+    var name = window.location.hash.slice(1);
+    socket.emit('join', {name: name});
+    document.querySelector('#join').style.display = 'none';
+  }
 });
 
 socket.on('state', function(data) {
@@ -39,6 +45,8 @@ socket.on('join', function(data) {
   }
   // Get a fresh state
   socket.emit('state');
+  // Set the hash
+  window.location.hash = '#' + data.name;
 });
 
 // A client leaves.
@@ -112,8 +120,7 @@ game.on('dead', function(data) {
 function gameover(msg) {
   smoke.confirm(msg, function(yes) {
     if (yes && playerId) {
-      // Reset the current player.
-      socket.emit('join', {name: playerId});
+      window.location.reload();
     } else {
       smoke.signal('watching mode');
       // Show the button
