@@ -91,7 +91,7 @@ io.sockets.on('connection', function(socket) {
 
   // When someone dies, let the clients know.
   engine.on('dead', function(data) {
-    io.sockets.emit('leave', {name: data.id, timeStamp: new Date()});
+    io.sockets.emit('leave', {name: data.id, type: data.type, timeStamp: new Date()});
   });
 
   // When the game ends, let the clients know.
