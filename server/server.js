@@ -55,6 +55,10 @@ io.sockets.on('connection', function(socket) {
       // Don't allow duplicate names.
       return;
     }
+    if (engine.getPlayerCount() >= 4) {
+      // Don't allow more than 4 players.
+      return;
+    }
     playerId = engine.join(data.name);
     data.timeStamp = new Date();
     // Broadcast that client has joined

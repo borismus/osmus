@@ -106,6 +106,20 @@ button:focus {
   color: white;
 }
 
+footer {
+  padding-top: 40px;
+  font-size: 22px;
+  clear: both;
+  margin: 0 auto;
+  width: 640px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+footer a {
+  color: yellow;
+}
+
 /* CSS idioms/hacks/workarounds */
 
 .clearfix:after {
