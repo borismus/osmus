@@ -27,8 +27,10 @@ CanvasRenderer.prototype.render = function() {
   for (var i in objects) {
     var o = objects[i];
     if (o.dead) {
-      // TODO: render animation
-      console.log('dead!', o.id);
+      // TODO: render animation.
+      if (o.type == 'player') {
+        console.log('player', o.id, 'died');
+      }
     }
     if (o.r > 0) {
       this.renderObject_(o);

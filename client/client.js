@@ -76,22 +76,25 @@ socket.on('shoot', function(data) {
 
 // Get a time sync from the server
 socket.on('time', function(data) {
-  // Compute how much we've skewed from the server
-  var updateDelta = game.state.timeStamp - data.lastUpdate;
+  // Compute how much we've skewed from the server since the last tick.
+  var updateDelta = data.lastUpdate - game.state.timeStamp ;
+  // Add to the cumulative skew offset.
   totalSkew += updateDelta;
-  console.log('totalSkew', totalSkew);
-  if (Math.abs(totalSkew) > 50) {
+  // If the skew offset is too large in either direction, get the real state
+  // from the server.
+  if (Math.abs(totalSkew) > Game.TARGET_LATENCY) {
     // Fetch the new truth from the server.
     socket.emit('state');
     totalSkew = 0;
   }
   // Set the true timestamp anyway now.
-  //game.state.timeStamp = data.lastUpdate;
+  game.state.timeStamp = data.lastUpdate;
 
   // Number of clients that aren't playing.
   document.getElementById('observer-count').innerText =
       Math.max(data.observerCount - game.getPlayerCount(), 0);
   document.getElementById('player-count').innerText = game.getPlayerCount();
+  document.getElementById('average-lag').innerText = updateDelta;
 });
 
 // Server reports that somebody won!

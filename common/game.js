@@ -24,6 +24,7 @@ Game.SHOT_AREA_RATIO = 0.02;
 Game.SHOT_SPEED_RATIO = 1;
 Game.PLAYER_SPEED_RATIO = 0.1;
 Game.TRANSFER_RATE = 0.05;
+Game.TARGET_LATENCY = 100; // Going for 100ms latency
 
 /**
  * Computes the game state
@@ -94,10 +95,10 @@ Game.prototype.computeState = function(delta) {
 Game.prototype.update = function(timeStamp) {
   var delta = timeStamp - this.state.timeStamp;
   if (delta < 0) {
-    throw "Can't compute state in the past.";
+    throw "Can't compute state in the past. Delta: " + delta;
   }
   if (delta > Game.MAX_DELTA) {
-    throw "Can't compute state so far in the future.";
+    throw "Can't compute state so far in the future. Delta: " + delta;
   }
   this.state = this.computeState(delta);
   this.updateCount++;
