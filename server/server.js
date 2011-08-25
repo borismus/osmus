@@ -1,20 +1,23 @@
 var io = require('socket.io').listen(5050);
-var game = new require('../common/game.js');
+var gamejs = new require('../common/game.js');
 var level = new require('./level.js');
 
+var Game = gamejs.Game;
+var game = new Game();
+
+// Generate a new level.
 var gen = new level.Generator({
-  width: game.Game.WIDTH,
-  height: game.Game.HEIGHT,
+  width: Game.WIDTH,
+  height: Game.HEIGHT,
   maxSpeed: 0.1,
   maxRadius: 15,
   blobCount: 10
 });
 
-var engine = new game.Game();
-engine.load(gen.generate());
+game.load(gen.generate());
 
 // Initialize the game loop
-var timer = engine.updateEvery(game.Game.UPDATE_INTERVAL);
+game.updateEvery(Game.UPDATE_INTERVAL);
 var observerCount = 0;
 
 io.sockets.on('connection', function(socket) {
@@ -24,18 +27,18 @@ io.sockets.on('connection', function(socket) {
 
   // When client connects, dump game state
   socket.emit('start', {
-    state: engine.save()
+    state: game.save()
   });
 
   // Client shoots
   socket.on('shoot', function(data) {
     console.log('recv shoot', data);
     // Check that the player is still alive
-    if (!engine.blobExists(playerId)) {
+    if (!game.blobExists(playerId)) {
       return;
     }
-    // Update the game engine
-    engine.shoot(playerId, data.direction);
+    // Update the game game
+    game.shoot(playerId, data.direction);
     data.playerId = playerId;
     data.timeStamp = (new Date()).valueOf();
     // Broadcast that shot was fired.
@@ -44,22 +47,22 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('state', function(data) {
     socket.emit('state', {
-      state: engine.save()
+      state: game.save()
     });
   });
 
   // Client joins the game as a player
   socket.on('join', function(data) {
     console.log('recv join', data);
-    if (engine.blobExists(data.name)) {
+    if (game.blobExists(data.name)) {
       // Don't allow duplicate names.
       return;
     }
-    if (engine.getPlayerCount() >= 4) {
+    if (game.getPlayerCount() >= 4) {
       // Don't allow more than 4 players.
       return;
     }
-    playerId = engine.join(data.name);
+    playerId = game.join(data.name);
     data.timeStamp = new Date();
     // Broadcast that client has joined
     socket.broadcast.emit('join', data);
@@ -71,7 +74,7 @@ io.sockets.on('connection', function(socket) {
   socket.on('leave', function(data) {
     console.log('recv leave', data);
     observerCount--;
-    engine.leave(playerId);
+    game.leave(playerId);
     data.timeStamp = new Date();
     // Broadcast that client has joined
     io.sockets.emit('leave', data);
@@ -80,7 +83,7 @@ io.sockets.on('connection', function(socket) {
   socket.on('disconnect', function(data) {
     console.log('recv disconnect', data);
     observerCount--;
-    engine.leave(playerId);
+    game.leave(playerId);
     // If this was a player, it just left
     if (playerId) {
       socket.broadcast.emit('leave', {name: playerId, timeStamp: new Date()});
@@ -91,25 +94,29 @@ io.sockets.on('connection', function(socket) {
   var timeSyncTimer = setInterval(function() {
     socket.emit('time', {
       timeStamp: (new Date()).valueOf(),
-      lastUpdate: engine.state.timeStamp,
-      updateCount: engine.updateCount,
+      lastUpdate: game.state.timeStamp,
+      updateCount: game.updateCount,
       observerCount: observerCount
     });
   }, 2000);
+});
 
-  // When someone dies, let the clients know.
-  engine.on('dead', function(data) {
-    io.sockets.emit('leave', {name: data.id, type: data.type, timeStamp: new Date()});
-  });
+// When someone dies, let the clients know.
+game.on('dead', function(data) {
+  io.sockets.emit('leave', {name: data.id, type: data.type, timeStamp: new Date()});
+});
 
-  // When the game ends, let the clients know.
-  engine.on('victory', function(data) {
-    io.sockets.emit('victory', {id: data.id});
-    // Stop the server
-    clearInterval(timer);
+// When the game ends, let the clients know.
+game.on('victory', function(data) {
+  console.log('game victory event fired');
+  io.sockets.emit('victory', {id: data.id});
+  // Stop the game.
+  game.over();
+  // Wait a bit and then restart.
+  setTimeout(function() {
+    // Load a new level.
+    game.load(gen.generate());
     // Restart the game.
-    engine = new game.Game();
-    engine.load(gen.generate());
-    timer = engine.updateEvery(game.Game.UPDATE_INTERVAL);
-  });
+    game.updateEvery(Game.UPDATE_INTERVAL);
+  }, Game.RESTART_DELAY);
 });

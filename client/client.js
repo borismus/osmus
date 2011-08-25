@@ -123,7 +123,7 @@ game.on('dead', function(data) {
 function gameover(msg) {
   smoke.confirm(msg, function(yes) {
     if (yes && playerId) {
-      window.location.reload();
+      socket.emit('join', {name: playerId});
     } else {
       smoke.signal('watching mode');
       // Show the button

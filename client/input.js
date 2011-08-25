@@ -10,18 +10,21 @@ function DesktopInput(game) {
   // Listen for mouse events on the canvas element
   var canvas = document.getElementById('canvas');
   canvas.addEventListener('click', function(e) {
+    _gaq.push(['_trackEvent', 'Shoot']);
     ctx.onclick.call(ctx, e);
   });
 
   // Bind to the join button
   var join = document.getElementById('join');
   join.addEventListener('click', function(e) {
+    _gaq.push(['_trackEvent', 'Join']);
     ctx.onjoin.call(ctx, e);
   });
 
   // Bind to music button.
   var music = document.getElementById('music');
   music.addEventListener('click', function(e) {
+    _gaq.push(['_trackEvent', 'Toggle Music']);
     ctx.onmusic.call(ctx, e);
   });
 }

@@ -25,6 +25,7 @@ Game.SHOT_SPEED_RATIO = 1;
 Game.PLAYER_SPEED_RATIO = 0.1;
 Game.TRANSFER_RATE = 0.05;
 Game.TARGET_LATENCY = 100; // Going for 100ms latency
+Game.RESTART_DELAY = 1000;
 
 /**
  * Computes the game state
@@ -119,8 +120,7 @@ Game.prototype.updateEvery = function(interval, skew) {
       ctx.update(date);
       lastUpdate += interval;
     }
-  }, 0);
-  return this.timer;
+  }, 1);
 };
 
 Game.prototype.over = function() {
@@ -338,6 +338,8 @@ Game.prototype.callback_ = function(event, data) {
   var callback = this.callbacks[event];
   if (callback) {
     callback(data);
+  } else {
+    throw "Warning: No callback defined!";
   }
 };
 
