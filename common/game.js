@@ -24,7 +24,7 @@ Game.SHOT_AREA_RATIO = 0.02;
 Game.SHOT_SPEED_RATIO = 1;
 Game.PLAYER_SPEED_RATIO = 0.1;
 Game.TRANSFER_RATE = 0.05;
-Game.TARGET_LATENCY = 2000; // Maximum latency skew.
+Game.TARGET_LATENCY = 1000; // Maximum latency skew.
 Game.RESTART_DELAY = 1000;
 
 /**
