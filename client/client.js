@@ -45,8 +45,6 @@ socket.on('join', function(data) {
     // Set the hash
     window.location.hash = '#' + data.name;
   }
-  // Get a fresh state
-  socket.emit('state');
 });
 
 // A client leaves.
@@ -56,8 +54,6 @@ socket.on('leave', function(data) {
     gameover('you were absorbed. play again?');
   }
   game.leave(data.name);
-  // Get a fresh state
-  socket.emit('state');
 });
 
 // A client shoots.
@@ -70,8 +66,6 @@ socket.on('shoot', function(data) {
   // Play shoot sound effect
   sound.playBloop();
   game.shoot(data.playerId, data.direction, data.timeStamp);
-  // Get a fresh state
-  socket.emit('state');
 });
 
 // Get a time sync from the server
@@ -88,13 +82,13 @@ socket.on('time', function(data) {
     totalSkew = 0;
   }
   // Set the true timestamp anyway now.
-  game.state.timeStamp = data.lastUpdate;
+  //game.state.timeStamp = data.lastUpdate;
 
   // Number of clients that aren't playing.
   document.getElementById('observer-count').innerText =
       Math.max(data.observerCount - game.getPlayerCount(), 0);
   document.getElementById('player-count').innerText = game.getPlayerCount();
-  document.getElementById('average-lag').innerText = updateDelta;
+  document.getElementById('average-lag').innerText = Math.abs(updateDelta);
 });
 
 // Server reports that somebody won!
