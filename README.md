@@ -1,6 +1,6 @@
 # Multiplayer HTML5 Osmos
 
-A tech demo inspired by Osmos.
+A tech demo inspired by Osmos.  For more information read the article here: http://smus.com/multiplayer-html5-games-with-node
 
 # Running
 
