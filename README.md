@@ -14,7 +14,6 @@ A tech demo inspired by Osmos.  For more information read the article here: http
 
 Osmus has been tested on Chrome 13 as well as iPads on iOS 4+.
 
-* Known issues with Chrome 14+ (due to a different Web Sockets spec)
 * Known issues in Firefox 5+ (you can still observe)
 
 # TODO
