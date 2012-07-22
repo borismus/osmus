@@ -52,8 +52,8 @@ DesktopInput.prototype.onleave = function() {
 
 DesktopInput.prototype.onclick = function(event) {
   // Get the position of the click.
-  var cx = event.offsetX;
-  var cy = event.offsetY;
+  var cx = event.clientX - event.target.getBoundingClientRect().left;
+  var cy = event.clientY - event.target.getBoundingClientRect().top;
   // Get the current player.
   var player = this.game.state.objects[playerId];
   // Sometimes the player isn't there.
