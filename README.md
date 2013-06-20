@@ -23,3 +23,9 @@ Osmus has been tested on Chrome 13 as well as iPads on iOS 4+.
 * Support binary sockets
 * Compress network format
 * Multiple rooms
+
+## Support
+
+If you're having problems with using the project, use the support forum at CodersClan.
+
+<a href="http://codersclan.net/forum/index.php?repo_id=28"><img src="http://www.codersclan.net/graphics/getSupport_blue_big.png" width="160"></a>
